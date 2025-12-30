@@ -25,7 +25,7 @@ OutputDir={#SourcePath}\Setup
 OutputBaseFilename={#SetupSetting("AppName")}
 
 SetupIconFile=shell32_35.ico
-UninstallDisplayIcon={#SetupSetting("SetupIconFile")}
+UninstallDisplayIcon={app}\{#SetupSetting("SetupIconFile")}
 
 [Files]
 Source: "Release\{#SetupSetting("AppName")}.exe"; \
