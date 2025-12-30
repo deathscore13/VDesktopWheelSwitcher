@@ -1,19 +1,18 @@
 ﻿#pragma once
 
-// dwTime: https://learn.microsoft.com/ru-ru/windows/win32/api/winuser/nf-winuser-animatewindow
-#define ANIMATE_WINDOW_TIME 200
+#define REG_KEY_CURRENTVIRTUALDESKTOP "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\SessionInfo\\%d\\VirtualDesktops"
 
-// animation time and etc. for switching
-#define SWITCH_DESKTOP_DURATION ANIMATE_WINDOW_TIME
+// max 100 in tests
+#define REG_MAX_SYNC_TIME 200
 
-// time to activate the application window
-#define ACTIVATE_APP_DURATION 100 + ANIMATE_WINDOW_TIME
+
+bool DesktopInit();
+bool DesktopUninit();
 
 void SwitchVDesktop(bool next);
 void CreateVDesktop();
 void DeleteVDesktop();
-void ActivateLastApp();
 bool NextVDesktop();
 
-bool IsTaskViewOpen();
-//int SetAnimationState(int state);
+// COM
+bool WindowExist();

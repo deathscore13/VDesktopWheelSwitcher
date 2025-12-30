@@ -4,5 +4,6 @@ Debug/
 Release/
 Setup/
 
+*.aps
 *.vcxproj.filters
 *.vcxproj.user

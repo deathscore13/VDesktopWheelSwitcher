@@ -2,16 +2,32 @@
 
 #define PROJECT_NAME        "VDesktopWheelSwitcher"
 #define PROJECT_DESCRIPTION "Virtual Desktop Wheel Switcher"
-#define PROJECT_VERSION     "1.0.0"
+#define PROJECT_VERSION     "1.0.1"
 #define GITHUB_REPOSITORY   "https://github.com/deathscore13/" PROJECT_NAME
 
 
-#if defined NDEBUG
-#define MsgDbg(msg)
-#define MsgDbg(msg, ...)
-#else
-#include <stdio.h>
+#define TO_STRING_EX(param) #param
+#define TO_STRING(param)    TO_STRING_EX(param)
 
-#define MsgDbg(msg)         printf(msg)
-#define MsgDbg(msg, ...)    printf(msg, __VA_ARGS__)
+#if defined(NDEBUG)
+
+#define MsgDbg(...)         ((void)0)
+#define MsgErr(code)        ((void)0)
+#define assert(expr,vretn)  if (!(expr)) return vretn;
+
+#else
+
+#include <stdio.h>
+#include <string>
+
+std::string GetErrorString(unsigned long code);
+
+#define MsgDbg(...)         printf(__VA_ARGS__)
+#define MsgErr(code)        MsgDbg("%s (" __FILE__ "#" TO_STRING(__LINE__) ")\n", GetErrorString(code).c_str())
+#define assert(expr,vretn)  if (!(expr)) \
+                            { \
+                                MsgDbg("Assertion failed: " #expr " (" __FILE__ "#" TO_STRING(__LINE__) ")\n"); \
+                                return vretn; \
+                            }
+
 #endif

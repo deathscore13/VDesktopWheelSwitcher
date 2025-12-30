@@ -1,8 +1,8 @@
 [Setup]
 AppName=VDesktopWheelSwitcher
 AppVerName=Virtual Desktop Wheel Switcher
-AppVersion=1.0.0
-VersionInfoVersion=1.0.0.0
+AppVersion=1.0.1
+VersionInfoVersion=1.0.1.0
 AppPublisher=DeathScore13
 AppSupportURL=https://github.com/deathscore13/{#SetupSetting("AppName")}
 AppId={{1D83DE75-7D3A-4E82-B3E3-D8AEC89BEA81}
