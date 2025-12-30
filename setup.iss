@@ -1,10 +1,12 @@
 [Setup]
 AppName=VDesktopWheelSwitcher
 AppVerName=Virtual Desktop Wheel Switcher
-AppVersion=1.0.1
-VersionInfoVersion=1.0.1.0
+AppVersion=1.0.2
+VersionInfoVersion=1.0.2.0
 AppPublisher=DeathScore13
+AppPublisherURL=https://github.com/deathscore13
 AppSupportURL=https://github.com/deathscore13/{#SetupSetting("AppName")}
+AppUpdatesURL=https://github.com/deathscore13/{#SetupSetting("AppName")}/releases
 AppId={{1D83DE75-7D3A-4E82-B3E3-D8AEC89BEA81}
 
 VersionInfoCompany=EvilCryDie
@@ -21,10 +23,16 @@ DefaultDirName={autopf}\{#SetupSetting("AppName")}
 DefaultGroupName={#SetupSetting("AppName")}
 OutputDir={#SourcePath}\Setup
 OutputBaseFilename={#SetupSetting("AppName")}
+
 SetupIconFile=shell32_35.ico
+UninstallDisplayIcon={#SetupSetting("SetupIconFile")}
 
 [Files]
 Source: "Release\{#SetupSetting("AppName")}.exe"; \
+DestDir: "{app}"; \
+Flags: ignoreversion
+
+Source: "{#SetupSetting("SetupIconFile")}"; \
 DestDir: "{app}"; \
 Flags: ignoreversion
 

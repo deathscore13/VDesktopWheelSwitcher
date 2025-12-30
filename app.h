@@ -2,7 +2,7 @@
 
 #define PROJECT_NAME        "VDesktopWheelSwitcher"
 #define PROJECT_DESCRIPTION "Virtual Desktop Wheel Switcher"
-#define PROJECT_VERSION     "1.0.1"
+#define PROJECT_VERSION     "1.0.2"
 #define GITHUB_REPOSITORY   "https://github.com/deathscore13/" PROJECT_NAME
 
 

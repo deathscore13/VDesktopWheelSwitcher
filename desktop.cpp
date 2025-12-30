@@ -7,6 +7,7 @@
 #include <thread>
 #include <Windows.h>
 
+static LSTATUS RegUpdateCurrentVirtualDesktop();
 static bool RegOpenKeyCVD();
 static void DesktopWorker();
 static void KeyEmulate3(int k0, int k1, int k2);
@@ -32,8 +33,25 @@ static std::mutex guidMutex;
 
 bool DesktopInit()
 {
-    if (workerRunning || !RegOpenKeyCVD())
+    if (workerRunning)
         return false;
+
+    if (!RegOpenKeyCVD())
+    {
+        MsgDbg("[*] First registry initialization...\n");
+        CreateVDesktop();
+
+        int i = REG_INIT_RECHECK_MAXITER;
+        do
+        {
+            Sleep(REG_MAX_SYNC_TIME);
+        }
+        while (!RegOpenKeyCVD() && 0 < --i);
+        assert(0 < i, false);
+
+        DeleteVDesktop();
+        MsgDbg("[*] First registry success!\n");
+    }
 
     assert((hEventStop = CreateEvent(nullptr, true, false, nullptr)) != nullptr, false);
     assert((hEventReg = CreateEvent(nullptr, true, false, nullptr)) != nullptr, false);
@@ -71,16 +89,42 @@ bool DesktopUninit()
     return true;
 }
 
+static LSTATUS RegUpdateCurrentVirtualDesktop()
+{
+    DWORD sz = sizeof(GUID);
+    {
+        std::lock_guard<std::mutex> lock(guidMutex);
+        
+        return RegQueryValueExA(hKey, "CurrentVirtualDesktop", nullptr, nullptr,
+            (LPBYTE)&CurrentVirtualDesktop, &sz);
+    }
+}
+
 static bool RegOpenKeyCVD()
 {
     DWORD id;
     ProcessIdToSessionId(GetCurrentProcessId(), &id);
 
     char key[128];
-    snprintf(key, sizeof(key), REG_KEY_CURRENTVIRTUALDESKTOP, id);
+    snprintf(key, sizeof(key), REG_KEY_CURRENTVIRTUALDESKTOP_LEGACY, id);
 
-    assert(RegOpenKeyEx(HKEY_CURRENT_USER, key, 0, KEY_NOTIFY | KEY_READ, &hKey) == S_OK, false);
-    return true;
+    MsgDbg("HKEY: ");
+    if (RegOpenKeyEx(HKEY_CURRENT_USER, key, 0, KEY_NOTIFY | KEY_READ, &hKey) == S_OK &&
+        RegUpdateCurrentVirtualDesktop() == S_OK)
+    {
+        MsgDbg("REG_KEY_CURRENTVIRTUALDESKTOP_LEGACY\n");
+        return true;
+    }
+
+    if (RegOpenKeyEx(HKEY_CURRENT_USER, REG_KEY_CURRENTVIRTUALDESKTOP, 0, KEY_NOTIFY | KEY_READ,
+        &hKey) == S_OK && RegUpdateCurrentVirtualDesktop() == S_OK)
+    {
+        MsgDbg("REG_KEY_CURRENTVIRTUALDESKTOP\n");
+        return true;
+    }
+
+    MsgDbg("Not found\n");
+    return false;
 }
 
 static void DesktopWorker()
@@ -94,9 +138,7 @@ static void DesktopWorker()
             hEventReg, true)) != S_OK)
         {
             MsgErr(code);
-
-            if (!RegOpenKeyCVD())
-                return;
+            assert(RegOpenKeyCVD(),);
         }
 
         switch (WaitForMultipleObjects(2, waitHandles, false, INFINITE))
@@ -105,19 +147,14 @@ static void DesktopWorker()
             workerRunning = false;
             break;
         case WAIT_OBJECT_0 + 1:
-            DWORD sz = sizeof(GUID);
+            if ((code = RegUpdateCurrentVirtualDesktop()) == S_OK)
             {
-                std::lock_guard<std::mutex> lock(guidMutex);
-                if ((code = RegQueryValueEx(hKey, "CurrentVirtualDesktop", nullptr, nullptr,
-                    (LPBYTE)&CurrentVirtualDesktop, &sz)) == S_OK)
-                {
-                    MsgDbg("Desktop changed: (%lld)\n", GetTickCount64());
-                    SetEvent(hEventDesktopChanged);
-                }
-                else
-                {
-                    MsgErr(code);
-                }
+                MsgDbg("Desktop changed: (%lld)\n", GetTickCount64());
+                SetEvent(hEventDesktopChanged);
+            }
+            else
+            {
+                MsgErr(code);
             }
 
             ResetEvent(hEventReg);

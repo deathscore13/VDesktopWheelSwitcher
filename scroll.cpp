@@ -70,6 +70,7 @@ static void ScrollWorker()
 
             {
                 std::lock_guard<std::mutex> lock(qMutex);
+
                 if (!qScroll.empty())
                 {
                     up = qScroll.front();
@@ -83,7 +84,8 @@ static void ScrollWorker()
             else
                 break;
         }
-    } while (workerRunning || ([&]() {
+    }
+    while (workerRunning || ([&]() {
         std::lock_guard<std::mutex> lock(qMutex);
         return !qScroll.empty();
     }()));
